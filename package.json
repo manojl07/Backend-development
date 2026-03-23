@@ -1,0 +1,24 @@
+{
+  "name": "backend---development",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/manojl07/Backend-development.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/manojl07/Backend-development/issues"
+  },
+  "homepage": "https://github.com/manojl07/Backend-development#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
