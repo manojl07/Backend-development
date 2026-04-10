@@ -1,54 +1,59 @@
 const express = require('express');
-const noteModel = require('./model/note.model');
-const cors = require('cors')
+const noteModel = require('./model/notes.model');
 
 const app = express();
 app.use(express.json());
+const cors = require('cors');
 app.use(cors());
 
-app.post('/notes', async (req, res) => {
+// POST _ Create
+app.post("/api/notes", async (req, res) => {
   const { title, description } = req.body;
 
-  const note = await noteModel.create({ title, description })
+  const note = await noteModel.create({ title, description });
+
   res.status(201).json({
     message: "Note created successfully",
     note
   })
 })
 
-app.get("/notes", async (req, res) => {
+// GET - Fetch
+app.get("/api/notes", async (req, res) => {
   const notes = await noteModel.find();
 
   res.status(200).json({
-    message: "Fetched notes successfully",
+    message: "Fetched all notes successfully",
     notes
   })
 })
+module.exports = app;
 
-app.delete("/notes/:id", async (req, res) => {
+// DELETE
+app.delete("/api/notes/:id", async (req, res) => {
   const id = req.params.id;
 
   await noteModel.findByIdAndDelete(id);
 
   res.status(200).json({
-    message: "deleted successfully!"
+    message: "Deleted note successfully"
   })
 })
 
-app.patch("/notes/:id", async (req, res) => {
+// UPDATE - Patch
+app.patch("/api/notes/:id", async (req, res) => {
   const id = req.params.id;
-  const { description } = req.body;
 
-  await noteModel.findByIdAndUpdate(id, { description });
+  const { description, title } = req.body;
+
+  const updatedNote = await noteModel.findByIdAndUpdate(
+    id,
+    {title, description},
+    {new: true}
+  );
 
   res.status(200).json({
-    message: "Updated successfully",
+    message: "Updated Successfully",
+    note: updatedNote
   })
 })
-
-
-
-
-
-
-module.exports = app;

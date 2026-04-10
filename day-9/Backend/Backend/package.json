@@ -1,11 +1,11 @@
 {
-  "name": "day-9",
+  "name": "day-8",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx nodemon src/server.js"
+    "dev": "nodemon src/server.js"
   },
   "keywords": [],
   "author": "",
