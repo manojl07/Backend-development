@@ -1,20 +1,27 @@
 const express = require('express');
 const noteModel = require('./model/note.model');
-const cors = require('cors')
+const cors = require('cors');
+const path = require('path');
 
 const app = express();
+
 app.use(express.json());
 app.use(cors());
 
+// static files
+app.use(express.static(path.join(__dirname, "public")));
+
+// API routes
 app.post('/api/notes', async (req, res) => {
   const { title, description } = req.body;
 
-  const note = await noteModel.create({ title, description })
+  const note = await noteModel.create({ title, description });
+
   res.status(201).json({
     message: "Note created successfully",
     note
-  })
-})
+  });
+});
 
 app.get("/api/notes", async (req, res) => {
   const notes = await noteModel.find();
@@ -22,8 +29,8 @@ app.get("/api/notes", async (req, res) => {
   res.status(200).json({
     message: "Fetched notes successfully",
     notes
-  })
-})
+  });
+});
 
 app.delete("/api/notes/:id", async (req, res) => {
   const id = req.params.id;
@@ -32,8 +39,8 @@ app.delete("/api/notes/:id", async (req, res) => {
 
   res.status(200).json({
     message: "deleted successfully!"
-  })
-})
+  });
+});
 
 app.patch("/api/notes/:id", async (req, res) => {
   const id = req.params.id;
@@ -42,18 +49,20 @@ app.patch("/api/notes/:id", async (req, res) => {
   const updatedNote = await noteModel.findByIdAndUpdate(
     id,
     { title, description },
-    { new: true }   // ⭐ IMPORTANT
+    { new: true }
   );
 
   res.status(200).json({
     message: "Updated successfully",
-    note: updatedNote   // ⭐ REQUIRED
+    note: updatedNote
   });
 });
 
+console.log(__dirname);
 
-
-
-
+// fallback route (VERY IMPORTANT)
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
 module.exports = app;
