@@ -3,89 +3,70 @@ import axios from 'axios'
 
 const App = () => {
   const [notes, setNotes] = useState([])
-
   const [editId, setEditId] = useState(null)
   const [editData, setEditData] = useState({
     title: "",
     description: ""
+  })
+  const [formData, setFormData] = useState({
+    title: "",
+    description: ""
   });
 
-  function fetchNotes() {
+
+  function fetchData() {
     axios.get("http://localhost:3000/api/notes")
       .then(res => {
+        console.log(res.data.notes);
         setNotes(res.data.notes)
       })
-      .catch(err => console.log(err))
+      .catch(err => {
+        alert("Something went wrong");
+        console.error(err);
+      })
   }
 
   useEffect(() => {
-    fetchNotes()
-  }, [])
-
-
-  // function handleSubmit(e) {
-  //   e.preventDefault();
-
-  //   const title = e.target.title.value;
-  //   const description = e.target.description.value;
-
-  //   console.log(title, description);
-
-  //   axios.post("http://localhost:3000/api/notes", {
-  //     title,
-  //     description
-  //   })
-  //   .then(res => {
-  //     setNotes(prev => [...prev, res.data.note]);
-  //   })
-  //   .catch(err => console.log(err));
-
-  //   e.target.reset();
-  // }
+    fetchData();
+  }, []);
 
   function handleSubmit(e) {
     e.preventDefault();
 
-    const title = e.target.title.value;
-    const description = e.target.description.value;
-
-    console.log(title, description);
-
-    axios.post("http://localhost:3000/api/notes", {
-      title,
-      description
-    })
-      .then(res => {
-        console.log(res.data);
+    axios.post("http://localhost:3000/api/notes", formData)
+      .then((res) => {
         setNotes(prev => [...prev, res.data.note])
+        setFormData({ title: "", description: "" }) // reset form
       })
-      .catch(err => console.log(err))
-    e.target.reset();
+      .catch(err => {
+        alert("Something went wrong");
+        console.error(err);
+      })
   }
 
-  // DELETING - Note 
   function handleOnDelete(noteId) {
     console.log(noteId);
 
-    axios.delete(`http://localhost:3000/api/notes/${noteId}`)
+    axios.delete("http://localhost:3000/api/notes/" + noteId)
       .then(res => {
         console.log(res.data);
         setNotes(prev => prev.filter(note => note._id !== noteId))
       })
-      .catch(err => console.log(err))
-  }
-
-  // UPDATE - patch
-  function handleUpdateOnId(noteId, updatedData) {
-    axios.patch(`http://localhost:3000/api/notes/${noteId}`, updatedData)
-      .then(res => {
-        console.log("UPDATE Response: ", res.data);
-        setNotes(prev =>
-          prev.map(note =>
-            note._id === noteId ? res.data.note : note))
+      .catch(err => {
+        alert("Something went wrong");
+        console.error(err);
       })
   }
 
+  function handleOnUpdate(noteId, updatedNote) {
+    axios.patch(`http://localhost:3000/api/notes/${noteId}`, updatedNote)
+      .then(res => {
+        console.log("Update response: " + res.data.note);
+        setNotes(prev => prev.map(note =>
+          note._id === noteId ? res.data.note : note
+        ))
+      })
+  }
 
 
 
@@ -95,8 +76,25 @@ const App = () => {
       <h1 className='heading'>Notes App</h1>
 
       <form onSubmit={handleSubmit}>
-        <input name="title" type="text" placeholder="Enter title :" />
-        <input name="description" type="text" placeholder="Enter desc :" />
+        <input
+          value={formData.title}
+          onChange={(e) =>
+            setFormData({ ...formData, title: e.target.value })
+          }
+          name="title"
+          type="text"
+          placeholder="Enter title :"
+        />
+
+        <input
+          value={formData.description}
+          onChange={(e) =>
+            setFormData({ ...formData, description: e.target.value })
+          }
+          name="description"
+          type="text"
+          placeholder="Enter desc :"
+        />
         <button className='btn'>Create note</button>
       </form>
 
@@ -113,7 +111,7 @@ const App = () => {
 
               {editId === note._id ? (
                 <>
-                {/* UPDATE - Inputs */}
+                  {/* UPDATE - Inputs */}
                   <input
                     value={editData.title}
                     onChange={(e) =>
@@ -128,21 +126,31 @@ const App = () => {
                     }
                   />
 
-                    {/* SAVE & CANCEL */}
-                 <div className="btns">
-                   <button className='btn save-btn'
-                    onClick={() => {
-                      handleUpdateOnId(note._id, editData);
-                      setEditId(null);
-                    }}
-                  >
-                    Save
-                  </button>
+                  {/* SAVE & CANCEL */}
+                  <div className="btns">
+                    <button className='btn save-btn'
+                      onClick={() => {
+                        handleOnUpdate(note._id, editData);
+                        setEditId(null);
+                        setEditData({
+                          title: "",
+                          description: ""
+                        })
 
-                  <button className='btn cancel-btn' onClick={() => setEditId(null)}>
-                    Cancel
-                  </button>
-                 </div>
+                      }}
+                    >
+                      Save
+                    </button>
+
+                    <button className='btn cancel-bt'
+                      onClick={() => {
+                        setEditId(null);
+                        setEditData({ title: "", description: "" });
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </>
               ) : (
                 <>
@@ -157,16 +165,13 @@ const App = () => {
                         setEditData({
                           title: note.title,
                           description: note.description
-                        });
+                        })
                       }}
                     >
                       Edit
                     </button>
 
-                    <button
-                      className='btn delete-btn'
-                      onClick={() => handleOnDelete(note._id)}
-                    >
+                    <button className='btn delete-btn' onClick={() => handleOnDelete(note._id)}>
                       Delete
                     </button>
                   </div>
