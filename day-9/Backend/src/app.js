@@ -61,8 +61,13 @@ app.patch("/api/notes/:id", async (req, res) => {
 console.log(__dirname);
 
 // fallback route (VERY IMPORTANT)
+app.get("/", (req, res) => {
+  res.send("Backend is running 🚀");
+});
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
+
+
 
 module.exports = app;

@@ -15,7 +15,7 @@ const App = () => {
 
 
   function fetchData() {
-    axios.get("http://localhost:3000/api/notes")
+    axios.get("https://backend-development-5-2lhr.onrender.com/api/notes")
       .then(res => {
         console.log(res.data.notes);
         setNotes(res.data.notes)
@@ -33,7 +33,7 @@ const App = () => {
   function handleSubmit(e) {
     e.preventDefault();
 
-    axios.post("http://localhost:3000/api/notes", formData)
+    axios.post("https://backend-development-5-2lhr.onrender.com/api/notes", formData)
       .then((res) => {
         setNotes(prev => [...prev, res.data.note])
         setFormData({ title: "", description: "" }) // reset form
@@ -47,7 +47,7 @@ const App = () => {
   function handleOnDelete(noteId) {
     console.log(noteId);
 
-    axios.delete("http://localhost:3000/api/notes/" + noteId)
+    axios.delete(`https://backend-development-5-2lhr.onrender.com/api/notes/${noteId}`)
       .then(res => {
         console.log(res.data);
         setNotes(prev => prev.filter(note => note._id !== noteId))
@@ -59,7 +59,7 @@ const App = () => {
   }
 
   function handleOnUpdate(noteId, updatedNote) {
-    axios.patch(`http://localhost:3000/api/notes/${noteId}`, updatedNote)
+    axios.patch(`https://backend-development-5-2lhr.onrender.com/api/notes/${noteId}`, updatedNote)
       .then(res => {
         console.log("Update response: " + res.data.note);
         setNotes(prev => prev.map(note =>
