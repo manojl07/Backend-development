@@ -13,15 +13,17 @@ const App = () => {
     description: ""
   });
 
+  const API_URL = "https://backend-development-3-6ep2.onrender.com";
+
 
   function fetchData() {
-    axios.get("http://localhost:3000/api/notes")
+      axios.get(`${API_URL}/api/notes`)
       .then(res => {
         console.log(res.data.notes);
         setNotes(res.data.notes)
       })
       .catch(err => {
-        alert("Something went wrong");
+        alert("data fetching is not happening");
         console.error(err);
       })
   }
@@ -33,13 +35,13 @@ const App = () => {
   function handleSubmit(e) {
     e.preventDefault();
 
-    axios.post("http://localhost:3000/api/notes", formData)
+      axios.post(`${API_URL}/api/notes`, formData)
       .then((res) => {
         setNotes(prev => [res.data.note, ...prev])
         setFormData({ title: "", description: "" }) // reset form
       })
       .catch(err => {
-        alert("Something went wrong");
+        alert("post is not working");
         console.error(err);
       })
   }
@@ -47,19 +49,19 @@ const App = () => {
   function handleOnDelete(noteId) {
     console.log(noteId);
 
-    axios.delete(`http://localhost:3000/api/notes/${noteId}`)
+      axios.delete(`${API_URL}/api/notes/${noteId}`)
       .then(res => {
         console.log(res.data);
         setNotes(prev => prev.filter(note => note._id !== noteId))
       })
       .catch(err => {
-        alert("Something went wrong");
+        alert("delete is not wroking");
         console.error(err);
       })
   }
 
   function handleOnUpdate(noteId, updatedNote) {
-    axios.patch(`http://localhost:3000/api/notes/${noteId}`, updatedNote)
+      axios.patch(`${API_URL}/api/notes/${noteId}`, updatedNote)
       .then(res => {
         console.log("Update response: " + res.data.note);
         setNotes(prev => prev.map(note =>
