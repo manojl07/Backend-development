@@ -14,7 +14,7 @@ app.use(cookieParser())
 app.use(cors({origin: true, credentials: true}))
 
 app.use(helmet())
-app.use('/app/auth', authRoutes)
+app.use('/api/auth', authRoutes)
 app.use(errorHandler)
 
 module.exports = app;
