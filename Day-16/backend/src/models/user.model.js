@@ -17,4 +17,6 @@ const userSchema = new mongoose.Schema({
   isResetOtpVerified: { type: Boolean, default: false }
 }, { timestamps: true })
 
+
+
 module.exports = mongoose.model("user", userSchema)

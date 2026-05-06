@@ -70,7 +70,7 @@ function Login() {
         response.data.accessToken
       );
 
-      navigate("/welcome");
+      navigate("/notes");
 
     } catch (error) {
 

@@ -8,33 +8,65 @@ import {
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import VerifyOtp from "./pages/VerifyOtp";
-import Welcome from "./pages/Welcome";
 import ForgotPassword from "./pages/ForgotPassword";
+import Notes from "./pages/Notes";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 
 function App() {
+
   return (
+
     <BrowserRouter>
+
       <Routes>
-        <Route path="/" element={<Navigate to="/register" />}
+
+        {/* DEFAULT ROUTE */}
+
+        <Route
+          path="/"
+          element={
+            <Navigate to="/login" />
+          }
         />
-        <Route path="/register" element={<Register />}
+
+        {/* AUTH ROUTES */}
+
+        <Route
+          path="/register"
+          element={<Register />}
         />
-        <Route path="/login" element={<Login />}
+
+        <Route
+          path="/login"
+          element={<Login />}
         />
-        <Route path="/verify-otp" element={<VerifyOtp />}
+
+        <Route
+          path="/verify-otp"
+          element={<VerifyOtp />}
         />
-        <Route path="/forgot-password" element={<ForgotPassword />}
+
+        <Route
+          path="/forgot-password"
+          element={<ForgotPassword />}
         />
-        <Route path="/welcome" element={
-          <ProtectedRoute>
-            <Welcome />
-          </ProtectedRoute>
-        }
+
+        {/* PROTECTED NOTES PAGE */}
+
+        <Route
+          path="/notes"
+          element={
+            <ProtectedRoute>
+              <Notes />
+            </ProtectedRoute>
+          }
         />
+
       </Routes>
+
     </BrowserRouter>
+
   );
 }
 
