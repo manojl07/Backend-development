@@ -1,4 +1,4 @@
-const jwt = reuqire('jsonwebtoken')
+const jwt = require('jsonwebtoken')
 
 exports.verifyAccessToken = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];

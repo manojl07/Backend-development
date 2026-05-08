@@ -2,7 +2,7 @@ const userModel = require('../model/user.model')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
-const { registerSchema, loginSchema, verifyOtpSchema, resentPasswordSchema } = require('../utils/validator')
+const { registerSchema, loginSchema, verifyOtpSchema, resetPasswordSchema } = require('../utils/validator')
 const { generateOtp } = require('../utils/generateOtp')
 const { generateAccessToken, generateRefreshToken } = require('../utils/generateToken')
 const { sendOtpEmail } = require('../utils/sendEmail')
@@ -13,18 +13,20 @@ exports.register = async (req, res, next) => {
     const { error } = registerSchema.validate(req.body);
     if (error) return res.status(400).json({ message: error.details[0].message })
 
+    const { username, email, password } = req.body;
+
     const existingUser = await userModel.findOne({ email })
     if (existingUser) {
 
-      if (!existingUser.isVErified) {
+      if (!existingUser.isVerified) {
         const otp = generateOtp();
-        const hashedOtp = await bcrypt(otp, 10)
+        const hashedOtp = await bcrypt.hash(otp, 10)
 
         existingUser.otp = hashedOtp;
         existingUser.otpExpiry = Date.now() + 5 * 60 * 1000
 
         await existingUser.save();
-        await sendOtpEmail();
+        await sendOtpEmail(email, otp);
 
         return res.status(200).json({ message: "Please verify OTP sent in mail." })
       }
@@ -35,7 +37,15 @@ exports.register = async (req, res, next) => {
     const otp = generateOtp();
     const hashedOtp = await bcrypt.hash(otp, 10);
 
-    await sendOtpEmail();
+    await userModel.create({
+      username,
+      email,
+      password: hashedPassword,
+      otp: hashedOtp,
+      otpExpiry: Date.now() + 5 * 60 * 1000,
+    })
+
+    await sendOtpEmail(email, otp);
 
     res.status(201).json({ message: "OTP sent in mail. Please verify" })
   } catch (error) {
@@ -46,20 +56,20 @@ exports.register = async (req, res, next) => {
 // =========================== LOGIN ===========================
 exports.login = async (req, res, next) => {
   try {
-    const { error } = loginSchema.validator(req.body);
+    const { error } = loginSchema.validate(req.body);
     if (error) return res.status(400).json({ message: error.details[0].message })
 
-    const { email, passsword } = req.body;
+    const { email, password } = req.body;
 
     const user = await userModel.findOne({ email });
-    if (!user || !(await bcrypt.compare(password, user.passowrd))) {
+    if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: "Invalid creds" })
     }
 
-    if (!user.isVerified) return res.status(403).json({ message: "Please vcerify your mail first" })
+    if (!user.isVerified) return res.status(403).json({ message: "Please verify your mail first" })
 
-    const accessToken = generateAccessToken();
-    const refreshToken = generateRefreshToken();
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
 
     user.refreshToken = refreshToken;
     await user.save();
@@ -68,11 +78,12 @@ exports.login = async (req, res, next) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 7 * 15 * 60 * 60 * 1000
+      maxAge: 7 * 24 * 60 * 60 * 1000
     })
 
     res.status(200).json({
       message: "Login Successfull",
+      accessToken,
       user: {
         id: user._id,
         username: user.username,
@@ -85,7 +96,7 @@ exports.login = async (req, res, next) => {
 }
 
 // ========================== REFRESH =======================
-exports.refresh = async = (req, res, next) => {
+exports.refresh = async (req, res, next) => {
   try {
     const token = req.cookies.refreshToken;
     if (!token) return res.status(401).json({ message: "No token" })
@@ -100,18 +111,20 @@ exports.refresh = async = (req, res, next) => {
     const user = await userModel.findById(decoded.id);
     if (!user || user.refreshToken !== token) return res.status(403).json({ message: "Token mismatch" })
 
-    const newAccessToken = generateAccessToken();
-    const newRefreshToken = generateRefreshToken();
+    const newAccessToken = generateAccessToken(user);
+    const newRefreshToken = generateRefreshToken(user);
 
-    res.cookie("refreshToken", refreshToken, {
+    user.refreshToken = newRefreshToken;
+    await user.save();
+
+    res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000
     })
 
-    user.refreshToken = newRefreshToken;
-    await user.save();
+
 
     res.json({ accessToken: newAccessToken })
     console.log("COOKIE:", req.cookies);
@@ -135,16 +148,182 @@ exports.getMe = async (req, res, next) => {
 exports.logout = async (req, res, next) => {
   try {
     const token = req.cookies.refreshToken;
-    if(token){
-      const user = await userModel.findById({refreshToken: token})
-      if(user){
+    if (token) {
+      const user = await userModel.findOne({ refreshToken: token })
+      if (user) {
         user.refreshToken = null;
         await user.save();
       }
-
-      res.clearCoo
     }
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    })
+
+    res.json({
+      message: "Logged out successfully"
+    });
   } catch (error) {
-    
+    next(error)
   }
 }
+
+// ===================== VERIFY EMAIL OTP ===================
+exports.verifyOtp = async (req, res, next) => {
+  try {
+    const { error } = verifyOtpSchema.validate(req.body);
+    if (error) return res.status(400).json({ message: error.details[0].message })
+
+    const { email, otp } = req.body;
+
+    const user = await userModel.findOne({ email })
+    if (!user) return res.status(404).json({ message: "User not found!" })
+
+    if (user.isVerified) return res.json({ message: "Already verified" })
+
+    if (!user.otpExpiry || user.otpExpiry < Date.now()) {
+      return res.status(400).json({ message: "Invalid OTP" })
+    }
+
+    const isMatch = await bcrypt.compare(otp, user.otp);
+
+    if (!user.otp || !isMatch) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    user.isVerified = true;
+    user.otp = null;
+    user.otpExpiry = null;
+
+    await user.save();
+
+    res.json({ message: "Account Verified Successfully" })
+
+  } catch (error) {
+    next(error)
+  }
+}
+
+// ====================== FORGOT PASSWORD =======================
+exports.forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    const user = await userModel.findOne({ email })
+
+    if (!user) return res.status(404).json({
+      message: "User not found"
+    })
+
+    if (!user.isVerified) return res.status(403).json({ message: "Account not Verified!" })
+
+    const otp = generateOtp();
+    const hashedOtp = await bcrypt.hash(otp, 10);
+
+    user.resetOtp = hashedOtp;
+    user.resetOtpExpires = Date.now() + 5 * 60 * 1000
+
+    await user.save();
+    await sendOtpEmail(email, otp);
+
+    res.json({ message: "OTP sent in mail." })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// ======================= VERIFY RESET OTP ======================
+exports.verifyResetOtp = async (req, res, next) => {
+  try {
+    const { error } = verifyOtpSchema.validate(req.body);
+    if (error) return res.status(400).json({ message: error.details[0].message })
+
+    const { email, otp } = req.body;
+
+    const user = await userModel.findOne({ email });
+    if (!user || !user.resetOtp || !(await bcrypt.compare(otp, user.resetOtp))) {
+      return res.status(403).json({ message: "Invalid OTP" })
+    }
+
+    if (!user.resetOtpExpires || user.resetOtpExpires < Date.now()) {
+      return res.status(403).json({ message: "OTP Expired." })
+    }
+
+    user.isResetOtpVerified = true;
+    user.resetOtp = null;
+    user.resetOtpExpires = null;
+
+    await user.save();
+
+    res.json({ message: "OTP verified successfully" })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// ====================== RESET PASSWORD ======================
+exports.resetPassword = async (req, res, next) => {
+  try {
+    const { error } = resetPasswordSchema.validate(req.body);
+    if (error) return res.status(400).json({ message: error.details[0].message })
+
+    const { email, newPassword } = req.body;
+
+    const user = await userModel.findOne({ email })
+
+    if (!user) return res.status(404).json({ message: "User not found" })
+
+    if (!user.isResetOtpVerified) return res.status(403).json({ message: "OTP not verified!" })
+
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(403).json({ message: "Password must be at least 6 characters" })
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    user.password = hashedPassword;
+
+    // clean ups's
+    user.resetOtp = null;
+    user.resetOtpExpires = null;
+    user.isResetOtpVerified = false;
+
+    // Logout all sessions
+    user.refreshToken = null;
+
+    await user.save();
+
+    res.json({ message: "Password updated successfully!" })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// ====================== RESEND OTP =========================
+exports.resendOtp = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    const user = await userModel.findOne({ email });
+
+    if (!user) return res.status(404).json({ message: "User not found" })
+
+    if (user.isVerified) return res.status(400).json({ message: "User already verified" })
+
+    // 🔐 generate new OTP
+    const otp = generateOtp();
+    const hashedOtp = await bcrypt.hash(otp, 10);
+
+    user.otp = hashedOtp;
+    user.otpExpiry = Date.now() + 5 * 60 * 1000
+
+    await user.save();
+    await sendOtpEmail(email, otp);
+
+    res.json({ message: "OTP re-sent successfully!" })
+  } catch (error) {
+    next(error)
+  }
+} 
