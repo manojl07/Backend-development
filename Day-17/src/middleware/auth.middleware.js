@@ -1,8 +1,16 @@
-exports.errorHandler = (err, req, res, next) => {
-  console.error(err);
+const jwt = reuqire('jsonwebtoken')
 
-  res.status(err.statusCode || 500).json({
-    success: false,
-    message: err.message || "Internal Server Error."
-  })
+exports.verifyAccessToken = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) return res.status(401).json({ message: "Unauthorized" })
+
+  try {
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+    req.user = decoded;
+    next();
+    
+  } catch (error) {
+    res.status(403).json({message: "Invalid token"})
+  }
 }
