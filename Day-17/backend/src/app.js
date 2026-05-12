@@ -33,8 +33,8 @@ app.use(
 )
 
 // ================= ROUTES =================
-app.use('/app/auth', authRoutes);
-app.use('/app/notes', noteRoutes);
+app.use('/auth', authRoutes);
+app.use('/notes', noteRoutes);
 
 // ================= DEFAULT ROUTE =================
 app.get('/', (req, res) => {

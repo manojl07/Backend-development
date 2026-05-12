@@ -56,6 +56,7 @@ const Register = () => {
             placeholder='Enter a new Username'
             disabled={loading}
             onChange={handleChange}
+            value={formData.username}
             autoComplete="off"
             className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition disabled:bg-gray-100"
           />
@@ -66,6 +67,7 @@ const Register = () => {
             disabled={loading}
             onChange={handleChange}
             autoComplete="off"
+            value={formData.email}
             className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition disabled:bg-gray-100"
           />
 
