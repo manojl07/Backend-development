@@ -1,136 +1,61 @@
-// VerifyOtp.jsx
-
-import React, {
-  useState,
-  useEffect,
-} from "react";
-
-import {
-  useLocation,
-  useNavigate,
-  Link,
-} from "react-router-dom";
-
+import React, { useState, useEffect,} from "react";
+import { useLocation, useNavigate, Link} from "react-router-dom";
 import API from "../services/axios";
 
 const VerifyOtp = () => {
 
-  const navigate =
-    useNavigate();
-
-  const location =
-    useLocation();
-
-  const email =
-    location.state?.email;
-
-  const [otp, setOtp] =
-    useState("");
-
-  const [error, setError] =
-    useState("");
-
-  const [loading, setLoading] =
-    useState(false);
-
-  const [resendLoading,
-    setResendLoading] =
-    useState(false);
-
-  const [timer, setTimer] =
-    useState(30);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const email = location.state?.email;
+  const [otp, setOtp] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [timer, setTimer] = useState(30);
 
   // Countdown Timer
   useEffect(() => {
-
     let interval;
-
     if (timer > 0) {
-
       interval = setInterval(() => {
-
         setTimer((prev) =>
           prev - 1
         );
-
       }, 1000);
-
     }
-
     return () =>
       clearInterval(interval);
-
   }, [timer]);
 
   // VERIFY OTP
-  const handleVerifyOtp =
-    async (e) => {
-
+  const handleVerifyOtp = async (e) => {
       e.preventDefault();
-
       setLoading(true);
       setError("");
 
       try {
-
-        await API.post(
-          "/verify-otp",
-          {
-            email,
-            otp,
-          }
-        );
-
+        await API.post("/verify-otp",{ email, otp,});
         navigate("/login");
-
       } catch (error) {
-
-        setError(
-          error.response?.data?.message ||
-          "OTP Verification Failed"
-        );
-
+        setError(error.response?.data?.message || "OTP Verification Failed");
       } finally {
-
         setLoading(false);
-
       }
-
     };
 
   // RESEND OTP
-  const handleResendOtp =
-    async () => {
-
+  const handleResendOtp = async () => {
       setResendLoading(true);
       setError("");
 
       try {
-
-        const res =
-          await API.post(
-            "/resend-otp",
-            { email }
-          );
-
-        alert(
-          res.data.message ||
-          "OTP Resent Successfully"
-        );
-
+        const res = await API.post("/resend-otp",{ email });
+        alert(res.data.message || "OTP Resent Successfully");
         setTimer(30);
-
       } catch (error) {
-
-        setError(
-          error.response?.data?.message ||
-          "Failed to resend OTP"
-        );
-
+        setError(error.response?.data?.message || "Failed to resend OTP");
       } finally {
-
         setResendLoading(false);
-
       }
 
     };

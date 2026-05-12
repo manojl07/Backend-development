@@ -17,74 +17,42 @@ import {
 } from "../context/AuthContext";
 
 function Login() {
+  const navigate = useNavigate();
 
-  const navigate =
-    useNavigate();
+  const { setToken } = useContext(AuthContext);
 
-  const { setToken } =
-    useContext(AuthContext);
+  const [formData, setFormData] = useState({ email: "", password: "", });
 
-  const [formData, setFormData] =
-    useState({
-      email: "",
-      password: "",
-    });
+  const [error, setError] = useState("");
 
-  const [error, setError] =
-    useState("");
-
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-
-    setFormData({
-      ...formData,
-      [e.target.name]:
-        e.target.value,
-    });
+    setFormData({...formData,[e.target.name]:e.target.value,});
 
   };
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
-
     setLoading(true);
     setError("");
 
     try {
+      const response = await API.post("/login", formData);
 
-      const response =
-        await API.post(
-          "/login",
-          formData
-        );
+      localStorage.setItem("token", response.data.accessToken);
 
-      localStorage.setItem(
-        "token",
-        response.data.accessToken
-      );
-
-      setToken(
-        response.data.accessToken
-      );
+      setToken(response.data.accessToken);
 
       navigate("/notes");
 
-    } catch (error) {
-
-      setError(
-        error.response?.data?.message ||
-        "Login failed"
-      );
-
-    } finally {
-
-      setLoading(false);
-
     }
-
+    catch (error) {
+      setError(error.response?.data?.message || "Login failed");
+    }
+    finally {
+      setLoading(false);
+    }
   };
 
   return (
