@@ -20,7 +20,7 @@ const Login = () => {
     setError("");
 
     try {
-      const response = await API.post('/login', formData);
+      const response = await API.post('/auth/login', formData);
       localStorage.setItem("token", response.data.accessToken);
       setToken(response.data.accessToken)
       navigate('/notes');
@@ -49,7 +49,7 @@ const Login = () => {
           />
 
           <input
-            type="text"
+            type="password"
             name='password'
             placeholder='Enter your password'
             disabled={loading}
@@ -58,11 +58,11 @@ const Login = () => {
           />
 
           <div className='flex justify-end'>
-            <Link to="/forgot-password">Forgot Password</Link>
+            <Link to="/forgot-password" className='text-red-500 underline font-semibold'>Forgot Password</Link>
           </div>
 
           {error && (
-            <p className='text-red-500 text-sm'>{error}</p>
+            <p className='text-red-500 text-sm font-semibold'>{error}</p>
           )}
 
           <button

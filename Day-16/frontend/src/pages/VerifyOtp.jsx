@@ -63,30 +63,14 @@ const VerifyOtp = () => {
   return (
 
     <div className="min-h-screen flex items-center justify-center bg-[#f0f2f5] px-4">
-
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-
         <div className="text-center mb-8">
-
-          <h1 className="text-4xl font-bold text-blue-600">
-            Verify OTP
-          </h1>
-
-          <p className="text-gray-500 mt-2">
-            Enter the OTP sent to your email
-          </p>
-
-          <p className="text-sm text-gray-400 mt-2 break-all">
-            {email}
-          </p>
-
+          <h1 className="text-4xl font-bold text-blue-600">Verify OTP</h1>
+          <p className="text-gray-500 mt-2">Enter the OTP sent to your email</p>
+          <p className="text-sm text-gray-400 mt-2 break-all">{email}</p>
         </div>
 
-        <form
-          onSubmit={handleVerifyOtp}
-          className="space-y-5"
-        >
-
+        <form onSubmit={handleVerifyOtp} className="space-y-5" >
           <input
             type="text"
             placeholder="Enter OTP"

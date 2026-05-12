@@ -21,9 +21,9 @@ const Register = () => {
     setError("");
 
     try {
-      await API.post("/register", formData)
+      await API.post("/auth/register", formData)
 
-      navigate('verify-otp',
+      navigate('/verify-otp',
         {
           state: {
             email: formData.email
@@ -40,7 +40,7 @@ const Register = () => {
   }
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-[f0f2f5] px-4'>
+    <div className='min-h-screen flex items-center justify-center bg-[#f0f2f5] px-4'>
 
       <div className='w-full max-w-md bg-white rounded-2xl shadow-xl p-8'>
         <div className='text-center mb-8'>
@@ -49,13 +49,14 @@ const Register = () => {
           <p className='text-gray-500 mt-2 '>Join us and start your journey</p>
         </div>
 
-        <form onSubmit={handleRegister}>
+        <form onSubmit={handleRegister} className="space-y-4">
           <input
             type="text"
             name='username'
             placeholder='Enter a new Username'
             disabled={loading}
             onChange={handleChange}
+            autoComplete="off"
             className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition disabled:bg-gray-100"
           />
           <input
@@ -64,6 +65,7 @@ const Register = () => {
             placeholder='Enter your email'
             disabled={loading}
             onChange={handleChange}
+            autoComplete="off"
             className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition disabled:bg-gray-100"
           />
 
@@ -77,7 +79,7 @@ const Register = () => {
           />
 
           {error && (
-            <p className='text-red-500 text-sm'>{error}</p>
+            <p className='text-red-500 text-sm font-semibold'>{error}</p>
           )}
 
           <button

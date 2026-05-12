@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import VerifyOtp from './pages/verifyOtp';
 
 const App = () => {
   return (
@@ -15,6 +16,7 @@ const App = () => {
         {/* AUTH ROUTES */}
         <Route path='/register' element={<Register />} />
         <Route path='/login' element={<Login />} />
+        <Route path="/verify-otp" element={<VerifyOtp />} />
 
       </Routes>
     </BrowserRouter>
