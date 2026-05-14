@@ -2,11 +2,13 @@ const rateLimit = require('express-rate-limit')
 
 // 🔐 Login limiter
 exports.loginLimiter = rateLimit({
-  windowMs: 50 * 60 * 1000,
-  max: 5,
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 100,
+
   message: {
-    message: "Too many login requests!!!"
+    message: "Too many login requests!!! from backend"
   },
+
   legacyHeaders: false,
   standardHeaders: true,
 })

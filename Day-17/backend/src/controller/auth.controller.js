@@ -61,10 +61,31 @@ exports.login = async (req, res, next) => {
 
     const { email, password } = req.body;
 
+    console.log("BODY:", req.body);
     const user = await userModel.findOne({ email });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ message: "Invalid creds" })
+    console.log("USER:", user);
+
+    // GPT
+    if (!user) {
+      console.log("USER NOT FOUND");
+      return res.status(401).json({
+        message: "Invalid creds"
+      });
     }
+
+    const isMatch = await bcrypt.compare(
+      password,
+      user.password
+    );
+
+    console.log("PASSWORD MATCH:", isMatch);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        message: "Invalid creds"
+      });
+    }
+    //END
 
     if (!user.isVerified) return res.status(403).json({ message: "Please verify your mail first" })
 

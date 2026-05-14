@@ -23,7 +23,7 @@ const Login = () => {
       const response = await API.post('/auth/login', formData);
       localStorage.setItem("token", response.data.accessToken);
       setToken(response.data.accessToken)
-      navigate('/notes');
+      navigate('/notes/');
     } catch (error) {
       setError(error.response?.data?.message || "Login failed");
     } finally {

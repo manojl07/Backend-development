@@ -1,54 +1,25 @@
-import {
-  useEffect,
-  useState,
-  useContext,
-} from "react";
-
+import { useEffect, useState, useContext,} from "react";
 import API from "../services/axios";
-
-import {
-  useNavigate,
-} from "react-router-dom";
-
-import {
-  AuthContext,
-} from "../context/AuthContext";
+import { useNavigate,} from "react-router-dom";
+import { AuthContext,} from "../context/AuthContext";
 
 function Notes() {
 
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
 
-  const { setToken } =
-    useContext(AuthContext);
-
-  const [notes, setNotes] =
-    useState([]);
-
-  const [loading, setLoading] =
-    useState(false);
-
-  const [creating, setCreating] =
-    useState(false);
-
-  const [updating, setUpdating] =
-    useState(false);
-
-  const [deletingId, setDeletingId] =
-    useState(null);
-
-  const [error, setError] =
-    useState("");
-
+  const { setToken } = useContext(AuthContext);
+  const [notes, setNotes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [error, setError] = useState("");
   const [formData, setFormData] =
     useState({
       title: "",
       description: "",
     });
-
-  const [editId, setEditId] =
-    useState(null);
-
+  const [editId, setEditId] = useState(null);
   const [editData, setEditData] =
     useState({
       title: "",
@@ -59,182 +30,85 @@ function Notes() {
   // ================= FETCH NOTES =================
 
   async function fetchNotes() {
-
     try {
-
       setLoading(true);
-
-      const res =
-        await API.get("/notes");
-
+      const res = await API.get("/notes");
       setNotes(res.data.notes);
-
     } catch (error) {
-
       console.error(error);
-
-      setError(
-        error.response?.data?.message ||
-        "Failed to fetch notes"
-      );
-
+      setError( error.response?.data?.message || "Failed to fetch notes");
     } finally {
-
       setLoading(false);
-
     }
-
   }
 
   useEffect(() => {
-
     fetchNotes();
-
   }, []);
 
 
   // ================= CREATE NOTE =================
-
   async function handleSubmit(e) {
-
     e.preventDefault();
-
     setError("");
 
     try {
-
       setCreating(true);
+      const res = await API.post("/notes", formData );
 
-      const res =
-        await API.post(
-          "/notes",
-          formData
-        );
+      setNotes((prev) => [ res.data.note, ...prev ]);
 
-      setNotes((prev) => [
-        res.data.note,
-        ...prev,
-      ]);
-
-      setFormData({
-        title: "",
-        description: "",
-      });
-
+      setFormData({ title: "", description: ""});
     } catch (error) {
-
       console.error(error);
-
-      setError(
-        error.response?.data?.message ||
-        "Failed to create note"
-      );
-
+      setError(error.response?.data?.message || "Failed to create note");
     } finally {
-
       setCreating(false);
-
     }
-
   }
 
 
   // ================= DELETE NOTE =================
-
   async function handleDelete(id) {
-
     try {
-
       setDeletingId(id);
-
-      await API.delete(
-        `/notes/${id}`
-      );
-
-      setNotes((prev) =>
-        prev.filter(
-          (note) =>
-            note._id !== id
-        )
-      );
-
+      await API.delete(`/notes/${id}`);
+      setNotes((prev) => prev.filter((note) => note._id !== id));
     } catch (error) {
-
       console.error(error);
-
-      setError(
-        error.response?.data?.message ||
-        "Failed to delete note"
-      );
-
+      setError(error.response?.data?.message || "Failed to delete note");
     } finally {
-
       setDeletingId(null);
-
     }
-
   }
 
-
   // ================= UPDATE NOTE =================
-
   async function handleUpdate(id) {
-
     try {
-
       setUpdating(true);
-
-      const res =
-        await API.patch(
-          `/notes/${id}`,
-          editData
-        );
-
-      setNotes((prev) =>
-        prev.map((note) =>
-          note._id === id
-            ? res.data.note
-            : note
-        )
-      );
-
-      setEditId(null);
-
-      setEditData({
-        title: "",
-        description: "",
-      });
-
+      const res = await API.patch(`/notes/${id}`, editData);
+      setNotes((prev) => prev.map((note) => note._id === id
+        ? res.data.note
+        : note
+      )
+    );
+    setEditId(null);
+    setEditData({title: "",description: ""});
     } catch (error) {
-
       console.error(error);
-
-      setError(
-        error.response?.data?.message ||
-        "Failed to update note"
-      );
-
+      setError(error.response?.data?.message || "Failed to update note");
     } finally {
-
       setUpdating(false);
-
     }
-
   }
 
 
   // ================= LOGOUT =================
 
   function logout() {
-
-    localStorage.removeItem(
-      "token"
-    );
-
+    localStorage.removeItem("token");
     setToken(null);
-
     navigate("/login");
-
   }
 
   return (
@@ -242,19 +116,10 @@ function Notes() {
     <div className="min-h-screen bg-[#f4f7fb] p-6">
 
       {/* HEADER */}
-
       <div className="max-w-6xl mx-auto flex justify-between items-center mb-10">
-
         <div>
-
-          <h1 className="text-4xl font-bold text-blue-600">
-            Notes App
-          </h1>
-
-          <p className="text-gray-500 mt-2">
-            Manage your notes professionally
-          </p>
-
+          <h1 className="text-4xl font-bold text-blue-600">Notes App</h1>
+          <p className="text-gray-500 mt-2">Manage your notes professionally</p>
         </div>
 
         <button
@@ -271,10 +136,7 @@ function Notes() {
 
       <div className="max-w-6xl mx-auto bg-white p-6 rounded-2xl shadow-lg mb-10">
 
-        <form
-          onSubmit={handleSubmit}
-          className="grid md:grid-cols-3 gap-4"
-        >
+        <form onSubmit={handleSubmit} className="grid md:grid-cols-3 gap-4">
 
           <input
             type="text"
@@ -366,39 +228,20 @@ function Notes() {
         ) : (
 
           notes.map((note) => (
-
-            <div
-              key={note._id}
-              className="bg-white rounded-2xl shadow-lg p-5"
-            >
-
+            <div key={note._id} className="bg-white rounded-2xl shadow-lg p-5">
               {editId === note._id ? (
-
                 <>
-
                   <input
                     value={editData.title}
                     onChange={(e) =>
-                      setEditData({
-                        ...editData,
-                        title:
-                          e.target.value,
-                      })
-                    }
-                    className="w-full border rounded-lg px-3 py-2 mb-3"
-                  />
+                      setEditData({...editData, title: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2 mb-3"/>
 
                   <textarea
                     value={editData.description}
                     onChange={(e) =>
-                      setEditData({
-                        ...editData,
-                        description:
-                          e.target.value,
-                      })
-                    }
-                    className="w-full border rounded-lg px-3 py-2 mb-3"
-                  />
+                      setEditData({...editData, description: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2 mb-3"/>
 
                   <div className="flex gap-3">
 

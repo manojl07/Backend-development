@@ -4,7 +4,7 @@ const nodeModel = require('../model/note.model')
 // ================= CREATE NOTE =================
 exports.createNote = async (req, res, next) => {
   try {
-    const { title, description } = rq.body;
+    const { title, description } = req.body;
 
     if (!title || !description) return res.status(400).json({
       message: "All fields are required"
@@ -33,7 +33,7 @@ exports.getNotes = async (req, res, next) => {
       notes
     })
   } catch (error) {
-    next(err)
+    next(error)
   }
 }
 
@@ -56,23 +56,41 @@ exports.deletedNote = async (req, res, next) => {
 // ================= UPDATE NOTE =================
 exports.updateNote = async (req, res, next) => {
   try {
-    const {title, description} = req.body;
 
-    if(!title || !description) return res.status(400).json({message: "All fields required!"})
-    
-    const updatedNoted = await noteModel.findByIdAndUpdate(
-      {_id: req.params.id, user: req.user.id},
-      {title, description},
-      {returndocument: "after"}
-    )
+    const { title, description } = req.body;
 
-    if(!updatedNote) return res.status(404).json({message: "Note note found"})
-    
+    if (!title || !description) {
+      return res.status(400).json({
+        message: "All fields required!"
+      });
+    }
+
+    const updatedNote = await noteModel.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        user: req.user.id
+      },
+      {
+        title,
+        description
+      },
+      {
+        returnDocument: "after"
+      }
+    );
+
+    if (!updatedNote) {
+      return res.status(404).json({
+        message: "Note not found"
+      });
+    }
+
     res.status(200).json({
       message: "Note Updated Successfully",
-      note: updatedNoted,
-    })
+      note: updatedNote,
+    });
+
   } catch (error) {
-    next(error)
+    next(error);
   }
 }
