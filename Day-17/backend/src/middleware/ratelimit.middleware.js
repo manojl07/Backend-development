@@ -16,7 +16,7 @@ exports.loginLimiter = rateLimit({
 // 📩 OTP limiter
 exports.otpLimiter = rateLimit({
   windowMs: 50 * 60 * 1000,
-  max: process.env.NODE_ENV === "development" ? 100 : 3,
+  max: process.env.NODE_ENV === "production" ? 100 : 3,
   message: {
     message: "Too many OTP requests. Please wait!"
   }

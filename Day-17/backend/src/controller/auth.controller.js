@@ -15,7 +15,9 @@ exports.register = async (req, res, next) => {
 
     const { username, email, password } = req.body;
 
-    const existingUser = await userModel.findOne({ email })
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const existingUser = await userModel.findOne({ email: normalizedEmail })
     if (existingUser) {
 
       if (!existingUser.isVerified) {
@@ -61,9 +63,16 @@ exports.login = async (req, res, next) => {
 
     const { email, password } = req.body;
 
+    const normalizedEmail = email.trim().toLowerCase();
+
     console.log("BODY:", req.body);
-    const user = await userModel.findOne({ email });
+    const user = await userModel.findOne({ email: normalizedEmail });
+
+    
     console.log("USER:", user);
+    console.log("USER FOUND:", user);
+    console.log("PASSWORD FROM INPUT:", password);
+    console.log("HASH FROM DB:", user?.password);
 
     // GPT
     if (!user) {
